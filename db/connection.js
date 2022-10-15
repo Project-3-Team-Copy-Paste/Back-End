@@ -6,12 +6,16 @@ const db = mongoose.connection;
 
 mongoose.connect(mongoURI);
 
-db.on('error', (err) => console.log(err.message + ' am monGOD break??'));
-db.on('connected', () => console.log('monGOD likey: ', mongoURI));
-db.on('disconnected', () => console.log('monGOD bye-bye'));
+db.on('error', (err) =>
+	console.log(err.message + ' You have failed the monGOD.')
+);
+db.on('connected', () =>
+	console.log('This connection pleases the monGOD.: ', mongoURI)
+);
+db.on('disconnected', () => console.log('The monGOD has abandoned you.'));
 
 db.on('open', () => {
-	console.log('✅ monGod!');
+	console.log('✅ Glory to the monGod!');
 });
 
 module.exports = mongoose;
