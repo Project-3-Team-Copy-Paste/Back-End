@@ -1,13 +1,18 @@
 const mongoose = require('../db/connection');
 
-const ReviewSchema = new mongoose.Schema({
-	movie: String,
-	title: String,
-	body: String,
-	rating: Number,
-	Author: String,
-});
+const ReviewSchema = new mongoose.Schema(
+	{
+		movie: String,
+		title: String,
+		body: String,
+		rating: Number,
+		Author: String,
+	},
+	{
+		timestamps: true,
+	}
+);
 
-const Bookmark = mongoose.model('Bookmark', BookmarkSchema);
+const Review = mongoose.model('Review', ReviewSchema);
 
-module.exports = Bookmark;
+module.exports = Review;
