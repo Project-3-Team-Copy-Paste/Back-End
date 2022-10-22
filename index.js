@@ -16,6 +16,8 @@ app.use(requestLogger);
 
 const reviewsController = require('./controllers/reviewsController.js');
 app.use('/reviews', reviewsController);
+const usersController = require('./controllers/usersController.js');
+app.use('/users', usersController);
 
 app.use((err, req, res, next) => {
 	const statusCode = res.statusCode || 500;

@@ -6,7 +6,11 @@ const ReviewSchema = new mongoose.Schema(
 		title: String,
 		body: String,
 		rating: Number,
-		Author: String,
+		Author: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'User',
+			required: false,
+		},
 	},
 	{
 		timestamps: true,
