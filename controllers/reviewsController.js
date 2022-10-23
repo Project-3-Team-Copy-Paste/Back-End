@@ -1,9 +1,10 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const Review = require('../models/Review');
+const Review = require("../models/Review");
+const User = require("../models/User");
 
-router.get('/', async (req, res, next) => {
+router.get("/", async (req, res, next) => {
 	try {
 		const reviews = await Review.find();
 		res.json(reviews);
@@ -12,7 +13,7 @@ router.get('/', async (req, res, next) => {
 	}
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get("/:id", async (req, res, next) => {
 	try {
 		const review = await Review.findById(req.params.id);
 		res.json(review);
@@ -21,7 +22,7 @@ router.get('/:id', async (req, res, next) => {
 	}
 });
 
-router.get('/movie/:id', async (req, res, next) => {
+router.get("/movie/:id", async (req, res, next) => {
 	try {
 		const reviews = await Review.find({ movie: req.params.id });
 		res.json(reviews);
@@ -30,31 +31,37 @@ router.get('/movie/:id', async (req, res, next) => {
 	}
 });
 
-router.post('/', async (req, res, next) => {
+router.post("/", async (req, res, next) => {
 	try {
-		const newReview = await Review.create(req.body);
-		res.status(201).json(newReview);
+		const user = await User.findById(req.body.author);
+		if (user) {
+			const review = await Review.create(req.body);
+			const user = await User.findByIdAndUpdate(
+				req.body.author,
+				{ $push: { reviews: review._id } },
+				{ new: true }
+			);
+			res.status(201).json([review, user]);
+		} else {
+			throw new Error("Not a valid user");
+		}
 	} catch (error) {
 		next(error);
 	}
 });
 
-router.put('/:id', async (req, res, next) => {
+router.put("/:id", async (req, res, next) => {
 	try {
-		const updatedReview = await Review.findOneAndUpdate(
-			{ _id: req.params.id },
-			req.body,
-			{
-				new: true,
-			}
-		);
+		const updatedReview = await Review.findByIdAndUpdate(req.params.id, req.body, {
+			new: true,
+		});
 		res.json(updatedReview);
 	} catch (error) {
 		next(error);
 	}
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete("/:id", async (req, res, next) => {
 	try {
 		await Review.findByIdAndDelete(req.params.id);
 		res.status(204);
