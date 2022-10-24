@@ -52,7 +52,7 @@ router.post("/signin", async (req, res, next) => {
 	try {
 		const user = await User.findOne({ username: req.body.username });
 		const token = await createUserToken(req, user);
-		res.json({ token });
+		res.json({ token, username: user.username });
 	} catch (err) {
 		next(err);
 	}
