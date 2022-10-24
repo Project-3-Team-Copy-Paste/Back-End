@@ -72,7 +72,7 @@ router.delete("/:id", requireToken, async (req, res, next) => {
 		const deletedReview = await Review.findByIdAndDelete(req.params.id);
 		const updatedUser = await User.findByIdAndUpdate(
 			deletedReview.author,
-			{ $pull: { movies: deletedReview.movie, reviews: req.params.id } },
+			{ $pull: { movies: { id: deletedReview.movie }, reviews: req.params.id } },
 			{ new: true }
 		);
 		res.json([deletedReview, updatedUser]);
