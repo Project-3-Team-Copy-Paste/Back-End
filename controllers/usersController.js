@@ -32,10 +32,33 @@ router.get("/reviews/:userId", requireToken, async (req, res, next) => {
 	}
 });
 
+// GET ALL MOVIES
 router.get("/movies/:userId", requireToken, async (req, res, next) => {
 	try {
 		const user = await User.findById(req.params.userId);
 		res.status(200).json(user.movies);
+	} catch (error) {
+		next(error);
+	}
+});
+
+router.patch("/:userId/movie/:movieId", async (req, res, next) => {
+	try {
+		if (req.body.finished === true) {
+			const user = await User.findOneAndUpdate(
+				{ _id: req.params.userId, "movies.id": req.params.movieId },
+				{ $set: { "movies.$.finished": true } },
+				{ new: true }
+			);
+			res.status(200).json(user);
+		} else {
+			const updatedUser = await User.findByIdAndUpdate(
+				req.params.userId,
+				{ $push: { movies: req.body } },
+				{ new: true }
+			);
+			res.status(200).json(updatedUser);
+		}
 	} catch (error) {
 		next(error);
 	}

@@ -8,6 +8,8 @@ const UserSchema = new mongoose.Schema(
 		movies: [
 			{
 				id: String,
+				poster_path: String,
+				title: String,
 				finished: Boolean,
 			},
 		],

@@ -40,7 +40,7 @@ router.post("/", requireToken, async (req, res, next) => {
 			const review = await Review.create({ ...req.body, author: user._id });
 			const updatedUser = await User.findOneAndUpdate(
 				{ username: req.body.author },
-				{ $push: { reviews: review._id, movies: { id: req.body.movie, finished: true } } },
+				{ $push: { reviews: review._id } },
 				{ new: true }
 			);
 			res.json(review);
