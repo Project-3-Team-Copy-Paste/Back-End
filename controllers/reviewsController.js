@@ -8,7 +8,7 @@ const User = require("../models/User");
 
 router.get("/", async (req, res, next) => {
 	try {
-		const reviews = await Review.find();
+		const reviews = await Review.find().populate("author");
 		res.json(reviews);
 	} catch (error) {
 		next(error);
@@ -17,7 +17,7 @@ router.get("/", async (req, res, next) => {
 
 router.get("/:id", async (req, res, next) => {
 	try {
-		const review = await Review.findById(req.params.id);
+		const review = await Review.find().populate("author");
 		res.json(review);
 	} catch (error) {
 		next(error);
@@ -26,7 +26,7 @@ router.get("/:id", async (req, res, next) => {
 
 router.get("/movie/:id", async (req, res, next) => {
 	try {
-		const reviews = await Review.find({ movie: req.params.id });
+		const reviews = await Review.find({ movie: req.params.id }).populate("author");
 		res.json(reviews);
 	} catch (error) {
 		next(error);
@@ -35,11 +35,11 @@ router.get("/movie/:id", async (req, res, next) => {
 
 router.post("/", requireToken, async (req, res, next) => {
 	try {
-		const user = await User.findById(req.body.author);
+		const user = await User.findOne({ username: req.body.author });
 		if (user) {
-			const review = await Review.create(req.body);
-			const user = await User.findByIdAndUpdate(
-				req.body.author,
+			const review = await Review.create({ ...req.body, author: user._id });
+			const updatedUser = await User.findOneAndUpdate(
+				{ username: req.body.author },
 				{ $push: { reviews: review._id, movies: { id: req.body.movie, finished: true } } },
 				{ new: true }
 			);
