@@ -64,7 +64,12 @@ router.put("/:id", async (req, res, next) => {
 router.delete("/:id", async (req, res, next) => {
 	try {
 		const deletedReview = await Review.findByIdAndDelete(req.params.id);
-		res.json(deletedReview);
+		const updatedUser = await User.findByIdAndUpdate(
+			deletedReview.author,
+			{ $pull: { movies: deletedReview.movie, reviews: req.params.id } },
+			{ new: true }
+		);
+		res.json([deletedReview, updatedUser]);
 	} catch (error) {
 		next(error);
 	}
