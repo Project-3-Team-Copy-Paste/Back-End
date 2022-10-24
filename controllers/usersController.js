@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const router = express.Router();
 const Review = require("../models/Review");
 const User = require("../models/User");
-const { createUserToken } = require("../middleware/auth");
+const { createUserToken, requireToken } = require("../middleware/auth");
 
 router.get("/", async (req, res, next) => {
 	try {
@@ -14,19 +14,51 @@ router.get("/", async (req, res, next) => {
 	}
 });
 
-router.get("/:id", async (req, res, next) => {
+router.get("/:userId", async (req, res, next) => {
 	try {
-		const user = await User.findById(req.params.id);
+		const user = await User.findById(req.params.userId);
 		res.status(200).json(user);
 	} catch (error) {
 		next(error);
 	}
 });
 
-router.get("/reviews/:id", async (req, res, next) => {
+router.get("/reviews/:userId", requireToken, async (req, res, next) => {
 	try {
-		const reviewsByAuthor = await Review.find({ author: req.params.id });
+		const reviewsByAuthor = await Review.find({ author: req.params.userId });
 		res.status(200).json(reviewsByAuthor);
+	} catch (error) {
+		next(error);
+	}
+});
+
+// GET ALL MOVIES
+router.get("/movies/:userId", requireToken, async (req, res, next) => {
+	try {
+		const user = await User.findById(req.params.userId);
+		res.status(200).json(user.movies);
+	} catch (error) {
+		next(error);
+	}
+});
+
+router.patch("/:userId/movie/:movieId", async (req, res, next) => {
+	try {
+		if (req.body.finished === true) {
+			const user = await User.findOneAndUpdate(
+				{ _id: req.params.userId, "movies.id": req.params.movieId },
+				{ $set: { "movies.$.finished": true } },
+				{ new: true }
+			);
+			res.status(200).json(user);
+		} else {
+			const updatedUser = await User.findByIdAndUpdate(
+				req.params.userId,
+				{ $push: { movies: req.body } },
+				{ new: true }
+			);
+			res.status(200).json(updatedUser);
+		}
 	} catch (error) {
 		next(error);
 	}
