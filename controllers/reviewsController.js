@@ -38,7 +38,7 @@ router.post("/", async (req, res, next) => {
 			const review = await Review.create(req.body);
 			const user = await User.findByIdAndUpdate(
 				req.body.author,
-				{ $push: { reviews: review._id } },
+				{ $push: { reviews: review._id, movies: { _id: false, id: req.body.movie, finished: true } } },
 				{ new: true }
 			);
 			res.status(201).json([review, user]);
@@ -63,8 +63,8 @@ router.put("/:id", async (req, res, next) => {
 
 router.delete("/:id", async (req, res, next) => {
 	try {
-		await Review.findByIdAndDelete(req.params.id);
-		res.status(204);
+		const deletedReview = await Review.findByIdAndDelete(req.params.id);
+		res.json(deletedReview);
 	} catch (error) {
 		next(error);
 	}
