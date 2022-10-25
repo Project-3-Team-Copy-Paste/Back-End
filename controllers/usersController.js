@@ -45,20 +45,20 @@ router.get("/movies/:userId", requireToken, async (req, res, next) => {
 
 router.patch("/:userId/movie/:movieId", requireToken, async (req, res, next) => {
 	try {
-		if (req.body.finished === true) {
-			const user = await User.findOneAndUpdate(
-				{ _id: req.params.userId, "movies.id": req.params.movieId },
-				{ $set: { "movies.$.finished": true } },
-				{ new: true }
-			);
-			res.status(200).json(user);
-		} else {
+		if (req.body.title) {
 			const updatedUser = await User.findByIdAndUpdate(
 				req.params.userId,
 				{ $push: { movies: req.body } },
 				{ new: true }
 			);
 			res.status(200).json(updatedUser);
+		} else {
+			const user = await User.findOneAndUpdate(
+				{ _id: req.params.userId, "movies.id": req.params.movieId },
+				{ $set: { "movies.$.finished": req.body.finished } },
+				{ new: true }
+			);
+			res.status(200).json(user);
 		}
 	} catch (error) {
 		next(error);
