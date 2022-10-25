@@ -8,7 +8,7 @@ const User = require("../models/User");
 
 router.get("/", async (req, res, next) => {
 	try {
-		const reviews = await Review.find().populate("author");
+		const reviews = await Review.find().sort({ updatedAt: -1 }).populate("author");
 		res.json(reviews);
 	} catch (error) {
 		next(error);
@@ -17,7 +17,7 @@ router.get("/", async (req, res, next) => {
 
 router.get("/:id", async (req, res, next) => {
 	try {
-		const review = await Review.find().populate("author");
+		const review = await Review.findById(req.params.id).populate("author");
 		res.json(review);
 	} catch (error) {
 		next(error);
@@ -26,7 +26,7 @@ router.get("/:id", async (req, res, next) => {
 
 router.get("/movie/:id", async (req, res, next) => {
 	try {
-		const reviews = await Review.find({ movie: req.params.id }).populate("author");
+		const reviews = await Review.find({ movie: req.params.id }).sort({ updatedAt: -1 }).populate("author");
 		res.json(reviews);
 	} catch (error) {
 		next(error);
