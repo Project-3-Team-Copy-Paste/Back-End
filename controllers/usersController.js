@@ -32,7 +32,6 @@ router.get("/reviews/:userId", requireToken, async (req, res, next) => {
 	}
 });
 
-// GET ALL MOVIES
 router.get("/movies/:userId", requireToken, async (req, res, next) => {
 	try {
 		const user = await User.findById(req.params.userId);
@@ -42,7 +41,7 @@ router.get("/movies/:userId", requireToken, async (req, res, next) => {
 	}
 });
 
-router.patch("/:userId/movie/:movieId", async (req, res, next) => {
+router.patch("/:userId/movie/:movieId", requireToken, async (req, res, next) => {
 	try {
 		if (req.body.finished === true) {
 			const user = await User.findOneAndUpdate(
@@ -84,7 +83,7 @@ router.post("/signin", async (req, res, next) => {
 	try {
 		const user = await User.findOne({ username: req.body.username });
 		const token = await createUserToken(req, user);
-		res.json({ token, username: user.username });
+		res.json({ token, username: user.username, userId: user._id });
 	} catch (err) {
 		next(err);
 	}
