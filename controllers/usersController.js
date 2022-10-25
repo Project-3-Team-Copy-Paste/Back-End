@@ -65,6 +65,19 @@ router.patch("/:userId/movie/:movieId", requireToken, async (req, res, next) => 
 	}
 });
 
+router.delete("/:userId/movie/:movieId", requireToken, async (req, res, next) => {
+	try {
+		const updatedUser = await User.findByIdAndUpdate(
+			req.params.userId,
+			{ $pull: { movies: { id: req.params.movieId } } },
+			{ new: true }
+		);
+		res.status(200).json(updatedUser);
+	} catch (error) {
+		next(error);
+	}
+});
+
 router.post("/signup", async (req, res, next) => {
 	try {
 		const password = await bcrypt.hash(req.body.password, 10);
