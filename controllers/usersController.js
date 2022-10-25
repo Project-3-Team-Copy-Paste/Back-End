@@ -25,7 +25,9 @@ router.get("/:userId", async (req, res, next) => {
 
 router.get("/reviews/:userId", requireToken, async (req, res, next) => {
 	try {
-		const reviewsByAuthor = await Review.find({ author: req.params.userId });
+		const reviewsByAuthor = await Review.find({ author: req.params.userId })
+			.sort({ updatedAt: -1 })
+			.populate("author");
 		res.status(200).json(reviewsByAuthor);
 	} catch (error) {
 		next(error);
