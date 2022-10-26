@@ -3,6 +3,7 @@ const mongoose = require("../db/connection");
 const ReviewSchema = new mongoose.Schema(
 	{
 		movie: String,
+		movie_title: String,
 		title: String,
 		body: String,
 		rating: Number,
