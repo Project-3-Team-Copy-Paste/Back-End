@@ -1,63 +1,81 @@
-const express = require('express');
+const express = require("express");
+const { requireToken } = require("../middleware/auth");
+const { handleValidateOwnership } = require("../middleware/custom_errors");
 const router = express.Router();
 
-const Review = require('../models/Review');
+const Review = require("../models/Review");
+const User = require("../models/User");
 
-router.get('/', async (req, res, next) => {
+router.get("/", async (req, res, next) => {
 	try {
-		const reviews = await Review.find();
+		const reviews = await Review.find().sort({ updatedAt: -1 }).populate("author");
 		res.json(reviews);
 	} catch (error) {
 		next(error);
 	}
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get("/:id", async (req, res, next) => {
 	try {
-		const review = await Review.findById(req.params.id);
+		const review = await Review.findById(req.params.id).populate("author");
 		res.json(review);
 	} catch (error) {
 		next(error);
 	}
 });
 
-router.get('/movie/:id', async (req, res, next) => {
+router.get("/movie/:id", async (req, res, next) => {
 	try {
-		const reviews = await Review.find({ movie: req.params.id });
+		const reviews = await Review.find({ movie: req.params.id }).sort({ updatedAt: -1 }).populate("author");
 		res.json(reviews);
 	} catch (error) {
 		next(error);
 	}
 });
 
-router.post('/', async (req, res, next) => {
+router.post("/", requireToken, async (req, res, next) => {
 	try {
-		const newReview = await Review.create(req.body);
-		res.status(201).json(newReview);
+		const user = await User.findOne({ username: req.body.author });
+		if (user) {
+			const review = await Review.create({ ...req.body, author: user._id });
+			const updatedUser = await User.findOneAndUpdate(
+				{ username: req.body.author },
+				{ $push: { reviews: review._id } },
+				{ new: true }
+			);
+			res.json(review);
+		} else {
+			throw new Error("Not a valid user");
+		}
 	} catch (error) {
 		next(error);
 	}
 });
 
-router.put('/:id', async (req, res, next) => {
+router.put("/:id", requireToken, async (req, res, next) => {
 	try {
-		const updatedReview = await Review.findOneAndUpdate(
-			{ _id: req.params.id },
-			req.body,
-			{
-				new: true,
-			}
-		);
+		const review = await Review.findById(req.params.id);
+		handleValidateOwnership(req, review);
+		const updatedReview = await Review.findByIdAndUpdate(req.params.id, req.body, {
+			new: true,
+		});
 		res.json(updatedReview);
 	} catch (error) {
 		next(error);
 	}
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete("/:id", requireToken, async (req, res, next) => {
 	try {
-		await Review.findByIdAndDelete(req.params.id);
-		res.status(204);
+		const review = await Review.findById(req.params.id);
+		handleValidateOwnership(req, review);
+		const deletedReview = await Review.findByIdAndDelete(req.params.id);
+		const updatedUser = await User.findByIdAndUpdate(
+			deletedReview.author,
+			{ $pull: { movies: { id: deletedReview.movie }, reviews: req.params.id } },
+			{ new: true }
+		);
+		res.json([deletedReview, updatedUser]);
 	} catch (error) {
 		next(error);
 	}
